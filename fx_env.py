@@ -37,6 +37,7 @@ class FxEnv(gym.Env):
         self.current_asset = [self.cripto, self.money]
         self.action_space = gym.spaces.Discrete(3)  # 東西南北
         self.MAP=np.array([0 for idx in range(0,self.observe_size)])
+        self.inventory=[]
         self.observation_space = gym.spaces.Box(
             low=0,
             high=3,
@@ -110,8 +111,13 @@ class FxEnv(gym.Env):
 
         return money, cripto, total_money,EMPTY_MONEY_FLAG
 
-    def _step(self, action_Q):
-        action_Q=action_Q.tolist()
+    def _step(self, action):
+        print(type(action))
+        if type(action) is list:
+            action=action.tolist()
+            action = action.index(max(action))
+        else:
+            pass
         self.price_idx+=1
 
         current_price = self.X_train[self.price_idx][-1]
@@ -123,7 +129,7 @@ class FxEnv(gym.Env):
 
         buy_sell_num_array = [1.0, 0.0, abs(self.buy_sell_count),between_range] if self.buy_sell_count >= 0 else [0.0, 1.0, abs(self.buy_sell_count),between_range]
 
-        action = action_Q.index(max(action_Q))
+
         self.trade.update_trading_view(current_price, action)
 
         reward=0
@@ -131,41 +137,31 @@ class FxEnv(gym.Env):
         if action == 0:
             print("buy")
             self.buy_sell_count += 1
-            self.money, self.cripto, self.total_money, EMPTY_MONEY_FLAG = self.buy_lot(self.money, self.cripto, self.total_money, current_price)
-            if EMPTY_MONEY_FLAG is True:
-                reward-=10.0
-        elif action == 1:
+            self.money, self.cripto, self.total_money = self.buy_simple(self.money, self.cripto, self.total_money, current_price)
+            if self.buy_sell_count < 0:
+                reward += 0.01
+            else:
+                reward -= 0.01
+        elif action == 1 and len(self.inventory) > 0:
             print("sell")
             self.buy_sell_count -= 1
-            self.money, self.cripto,self.total_money, EMPTY_MONEY_FLAG = self.sell_lot(self.money, self.cripto, self.total_money, current_price)
-            if EMPTY_MONEY_FLAG is True:
-                reward-=10.0
+            self.money, self.cripto,self.total_money = self.sell_simple(self.money, self.cripto, self.total_money, current_price)
+            if self.buy_sell_count > 0:
+                reward += 0.01
+            else:
+                reward -= 0.01
         else:
             print("PASS")
             self.money, self.cripto, self.total_money = self.pass_simple(self.money, self.cripto, self.total_money, current_price)
-            reward -= 1.0  # -0.001)#0.01 is default
+            reward += 0.000000  # -0.001)#0.01 is default
             self.pass_count += 1
 
-        reward += float(self.total_money - self.before_money)
-        if self.buy_sell_count >= 10 and action == 0:
-            reward -= 10.0#(float(abs(self.buy_sell_count) ** 2))
-            print(reward)
-        elif self.buy_sell_count <= -10 and action == 1:
-            reward -= 10.0#(float(abs(self.buy_sell_count) ** 2))
-            print(reward)
-        elif self.buy_sell_count >= 10 and action==1:
-            reward+=10.0
-        elif self.buy_sell_count <=-10 and action==0:
-            reward+=10.0
-        else:
-            # reward 1.0がちょうど良い！
-            reward += 0.01
-
+        reward += 0.01 * (self.total_money - self.before_money)
         print("buy_sell" + str(self.buy_sell_count) + "回　action==" + str(action))
 
         self.before_money = self.total_money
 
-        if self.price_idx % 200000 == 1000:
+        if self.price_idx % 2000 == 1000:
             print("last action:" + str(action))
             print("TOTAL MONEY" + str(self.total_money))
             print("100回中passは" + str(self.pass_count) + "回")
