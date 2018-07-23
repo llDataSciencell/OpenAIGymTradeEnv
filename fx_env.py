@@ -1,4 +1,7 @@
 import copy
+import sys
+import sys,os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from trade_class import TradeClass
 import gym
 import numpy as np
@@ -25,9 +28,9 @@ class FxEnv(gym.Env):
             self.y_train.append(training_set[i])
 
         self.price = self.y_train
-        self.money = 300
+        self.money = 500
         self.before_money = copy.deepcopy(self.money)
-        self.cripto = 0.1
+        self.cripto = 0.00001
         self.total_money = self.money + np.float64(self.price[0] * self.cripto)
         self.first_total_money = self.total_money
         self.pass_count = 0
@@ -43,6 +46,7 @@ class FxEnv(gym.Env):
             high=3,
             shape=self.MAP.shape
         )
+        self.begin_total_money=self.y_train[0]
         print("LENGTH OF LOOP NUM:"+str(len(self.X_train)))
 
     def _reset(self):
@@ -112,8 +116,8 @@ class FxEnv(gym.Env):
         return money, cripto, total_money,EMPTY_MONEY_FLAG
 
     def _step(self, action):
-        print(type(action))
-        if type(action) is list:
+
+        if type(action) is list or type(action) is np.ndarray:
             action=action.tolist()
             action = action.index(max(action))
         else:
@@ -161,16 +165,21 @@ class FxEnv(gym.Env):
 
         self.before_money = self.total_money
 
-        if self.price_idx % 2000 == 1000:
+        if False:#self.price_idx % 50000 == 1000:
             print("last action:" + str(action))
             print("TOTAL MONEY" + str(self.total_money))
             print("100回中passは" + str(self.pass_count) + "回")
             # print("100回中buy_sell_countは" + str(self.buy_sell_count) + "回")
             self.pass_count = 0
-            self.trade.draw_trading_view()
-        print(self.total_money)
-        print(self.price_idx)
-        print("Reward:"+str(reward))
+            try:
+                self.trade.draw_trading_view()
+            except:
+                pass
+
+        print("begin  MONEY: "+str(self.begin_total_money))
+        print("current MONEY: "+str(self.total_money))
+        print("price_IDX: "+str(self.price_idx))
+        print("Reward: "+str(reward))
         self.current_asset=[self.cripto,self.money]
 
         # obs, reward, done, infoを返す
