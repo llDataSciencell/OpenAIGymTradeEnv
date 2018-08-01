@@ -5,6 +5,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from trade_class import TradeClass
 import gym
 import numpy as np
+from functions import *
+
 class FxEnv(gym.Env):
     def __init__(self):
         self.price_idx=0
@@ -12,19 +14,20 @@ class FxEnv(gym.Env):
         training_set = self.trade.read_bitflyer_json()
         print("price_data idx 0-10" + str(training_set[0:10]))
         print("price_data idx last 10" + str(training_set[-1]))
+        self.length_data=len(training_set)
 
         self.input_len = 400
         self.n_actions = 3
         self.asset_info_len=2
         self.buy_sell_count_len=4
-        self.observe_size = self.input_len + self.buy_sell_count_len+self.asset_info_len  #env.observation_space.shape[0]
-
+        #TODO
+        self.observe_size = self.input_len+self.buy_sell_count_len#+self.asset_info_len  #env.observation_space.shape[0]
         
-        self.X_train = []
+        self.data = []
         self.y_train = []
-        for i in range(self.input_len, len(training_set) - 1001):
-            # X_train.append(np.flipud(training_set_scaled[i-60:i]))
-            self.X_train.append(training_set[i - self.input_len:i])
+        for i in range(self.input_len, self.length_data - 1001):
+            # data.append(np.flipud(training_set_scaled[i-60:i]))
+            self.data.append(training_set[i - self.input_len:i])
             self.y_train.append(training_set[i])
 
         self.price = self.y_train
@@ -46,14 +49,21 @@ class FxEnv(gym.Env):
             high=3,
             shape=self.MAP.shape
         )
-        self.begin_total_money=self.y_train[0]
-        print("LENGTH OF LOOP NUM:"+str(len(self.X_train)))
+        self.begin_total_money=self.money+self.cripto*self.price[0]
+        print("LENGTH OF LOOP NUM:"+str(len(self.data)))
+        self.buy_inventory=[]
+        self.sell_inventory=[]
+        self.total_profit=0
 
     def _reset(self):
         self.price_idx=0
-        return self.X_train[self.price_idx]+[0,0,0,0]+self.current_asset
+        return self.data[self.price_idx]+[0,0,0,0]#TODO: +self.current_asset
     def _seed(self,seed=None):
-        pass
+        return self.length_data
+
+    def return_lenghth_steps(self):
+        return self.length_data
+
     def _render(self, mode='', close=False):
         #画面への表示　主にGUI
         pass
@@ -124,47 +134,49 @@ class FxEnv(gym.Env):
             pass
         self.price_idx+=1
 
-        current_price = self.X_train[self.price_idx][-1]
-
-        if abs(self.buy_sell_count)>=10:
-            between_range=0.0
-        else:
-            between_range=1.0
-
-        buy_sell_num_array = [1.0, 0.0, abs(self.buy_sell_count),between_range] if self.buy_sell_count >= 0 else [0.0, 1.0, abs(self.buy_sell_count),between_range]
-
+        current_price = self.data[self.price_idx][-1]
 
         self.trade.update_trading_view(current_price, action)
 
-        reward=0
-
-        if action == 0:
-            print("buy")
-            self.buy_sell_count += 1
-            self.money, self.cripto, self.total_money = self.buy_simple(self.money, self.cripto, self.total_money, current_price)
-            if self.buy_sell_count < 0:
-                reward += 0.01
-            else:
-                reward -= 0.01
-        elif action == 1 and len(self.inventory) > 0:
-            print("sell")
-            self.buy_sell_count -= 1
-            self.money, self.cripto,self.total_money = self.sell_simple(self.money, self.cripto, self.total_money, current_price)
-            if self.buy_sell_count > 0:
-                reward += 0.01
-            else:
-                reward -= 0.01
+        len_buy=len(self.buy_inventory)
+        len_sell=len(self.sell_inventory)
+        if len_buy > 40:
+            buy_flag = 1
+            sell_flag= 0
+        elif len_sell > 40:
+            buy_flag = 0
+            sell_flag= 1
         else:
-            print("PASS")
-            self.money, self.cripto, self.total_money = self.pass_simple(self.money, self.cripto, self.total_money, current_price)
-            reward += 0.000000  # -0.001)#0.01 is default
-            self.pass_count += 1
+            buy_flag=0
+            sell_flag=0
 
-        reward += 0.01 * (self.total_money - self.before_money)
-        print("buy_sell" + str(self.buy_sell_count) + "回　action==" + str(action))
+        buy_sell_array=[len_buy,len_sell,buy_flag,sell_flag]
 
-        self.before_money = self.total_money
+        #TODO idx + 1じゃなくて良いか？　バグの可能性あり。=>修正済み
+        #next_state = getStateFromCsvData(self.data, self.price_idx+1, window_size)
+        reward = 0
+        if action == 1 and len(self.sell_inventory) > 0 and len(self.buy_inventory) < 50:  # sell
+                sold_price = self.sell_inventory.pop(0)
+                profit=sold_price - current_price
+                reward = profit#max(profit, 0)
+                self.total_profit += profit
+                print("Buy(空売りの決済): " + str(current_price) + " | Profit: " + str(profit))
+        elif action == 1 and len(self.buy_inventory) < 50:  # buy
+                self.buy_inventory.append(current_price)
+                print("Buy: " + str(current_price))
+        elif action == 2 and len(self.buy_inventory) > 0 and len(self.sell_inventory) < 50:  # sell
+                bought_price = self.buy_inventory.pop(0)
+                profit = current_price - bought_price
+                reward = profit  # max(profit, 0)
+                self.total_profit += profit
+                print("Sell: " + str(current_price) + " | Profit: " + formatPrice(profit))
+        elif action == 2 and len(self.sell_inventory) < 50:
+                self.sell_inventory.append(current_price)
+                print("Sell(空売り): " + formatPrice(current_price))
 
+        print("Reward: "+str(reward))
+        print("inventory(sell) : "+str(len(self.sell_inventory)))
+        print("inventory(buy)  : "+str(len(self.buy_inventory)))
         if False:#self.price_idx % 50000 == 1000:
             print("last action:" + str(action))
             print("TOTAL MONEY" + str(self.total_money))
@@ -175,13 +187,8 @@ class FxEnv(gym.Env):
                 self.trade.draw_trading_view()
             except:
                 pass
-
-        print("begin  MONEY: "+str(self.begin_total_money))
-        print("current MONEY: "+str(self.total_money))
-        print("price_IDX: "+str(self.price_idx))
-        print("Reward: "+str(reward))
-        self.current_asset=[self.cripto,self.money]
+        done = True if self.price_idx == self.length_data - 1 else False
 
         # obs, reward, done, infoを返す
-        return self.X_train[self.price_idx]+buy_sell_num_array+self.current_asset,reward,False,{}
+        return self.data[self.price_idx]+buy_sell_array,reward,done,{}
 
