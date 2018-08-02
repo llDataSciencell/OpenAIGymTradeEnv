@@ -18,8 +18,8 @@
       <file leaf-file-name="fx_env.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fx_env.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="215">
-              <caret line="157" column="56" lean-forward="false" selection-start-line="157" selection-start-column="56" selection-end-line="157" selection-end-column="56" />
+            <state relative-caret-position="428">
+              <caret line="185" column="18" lean-forward="false" selection-start-line="185" selection-start-column="18" selection-end-line="185" selection-end-column="18" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -40,7 +40,7 @@
       <file leaf-file-name="functions.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/functions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1710">
+            <state relative-caret-position="1650">
               <caret line="114" column="49" lean-forward="false" selection-start-line="114" selection-start-column="40" selection-end-line="114" selection-end-column="49" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
@@ -64,7 +64,7 @@
       <file leaf-file-name="trade_class.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/trade_class.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2610">
+            <state relative-caret-position="2505">
               <caret line="174" column="29" lean-forward="false" selection-start-line="174" selection-start-column="29" selection-end-line="174" selection-end-column="29" />
               <folding>
                 <element signature="e#105#123#0" expanded="true" />
@@ -165,8 +165,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -181,6 +179,8 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -916,7 +916,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/functions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1710">
+        <state relative-caret-position="1650">
           <caret line="114" column="49" lean-forward="false" selection-start-line="114" selection-start-column="40" selection-end-line="114" selection-end-column="49" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
@@ -926,7 +926,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/trade_class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2610">
+        <state relative-caret-position="2505">
           <caret line="174" column="29" lean-forward="false" selection-start-line="174" selection-start-column="29" selection-end-line="174" selection-end-column="29" />
           <folding>
             <element signature="e#105#123#0" expanded="true" />
@@ -944,8 +944,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fx_env.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="215">
-          <caret line="157" column="56" lean-forward="false" selection-start-line="157" selection-start-column="56" selection-end-line="157" selection-end-column="56" />
+        <state relative-caret-position="428">
+          <caret line="185" column="18" lean-forward="false" selection-start-line="185" selection-start-column="18" selection-end-line="185" selection-end-column="18" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>

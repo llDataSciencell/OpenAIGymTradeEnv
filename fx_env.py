@@ -162,11 +162,11 @@ class FxEnv(gym.Env):
                 profit=sold_price - current_price
                 reward = profit#max(profit, 0)
                 self.total_profit += profit
-                print("Buy(空売りの決済): " + str(current_price) + " | Profit: " + str(profit))
+                #print("Buy(空売りの決済): " + str(current_price) + " | Profit: " + str(profit))
             reward = reward / (i + 1)
         elif action == 1 and len(self.buy_inventory) < 50:  # buy
                 self.buy_inventory.append(current_price)
-                print("Buy: " + str(current_price))
+                #print("Buy: " + str(current_price))
         elif action == 2 and len(self.buy_inventory) > 0:  # sell
             i = 0
             for i in range(0, int(len(self.buy_inventory) / 10)):
@@ -174,17 +174,19 @@ class FxEnv(gym.Env):
                 profit = current_price - bought_price
                 reward = profit  # max(profit, 0)
                 self.total_profit += profit
-                print("Sell: " + str(current_price) + " | Profit: " + formatPrice(profit))
+                #print("Sell: " + str(current_price) + " | Profit: " + formatPrice(profit))
             reward = reward / (i + 1)
         elif action == 2 and len(self.sell_inventory) < 50:
                 self.sell_inventory.append(current_price)
-                print("Sell(空売り): " + formatPrice(current_price))
+                #print("Sell(空売り): " + formatPrice(current_price))
 
-        print("Reward: "+str(reward))
+        #print("Reward: "+str(reward))
         print("inventory(sell) : "+str(len(self.sell_inventory))+"       inventory(buy)  : "+str(len(self.buy_inventory)))
         print("TOTAL PROFIT:  "+str(self.total_profit))
-        if self.price_idx % 10000 == 1000:
+        if False:#self.price_idx % 10000 == 1000:
             try:
+                print("TOTAL PROFIT:  " + str(self.total_profit))
+                print("inventory(sell) : " + str(len(self.sell_inventory)) + "       inventory(buy)  : " + str(len(self.buy_inventory)))
                 self.trade.draw_trading_view()
             except:
                 pass
