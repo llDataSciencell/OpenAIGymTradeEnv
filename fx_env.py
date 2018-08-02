@@ -155,21 +155,27 @@ class FxEnv(gym.Env):
         #TODO idx + 1じゃなくて良いか？　バグの可能性あり。=>修正済み
         #next_state = getStateFromCsvData(self.data, self.price_idx+1, window_size)
         reward = 0
-        if action == 1 and len(self.sell_inventory) > 0 and len(self.buy_inventory) < 50:  # sell
+        if action == 1 and len(self.sell_inventory) > 0:  # sell
+            i = 0
+            for i in range(0, int(len(self.sell_inventory) / 10)):
                 sold_price = self.sell_inventory.pop(0)
                 profit=sold_price - current_price
                 reward = profit#max(profit, 0)
                 self.total_profit += profit
                 print("Buy(空売りの決済): " + str(current_price) + " | Profit: " + str(profit))
+            reward = reward / (i + 1)
         elif action == 1 and len(self.buy_inventory) < 50:  # buy
                 self.buy_inventory.append(current_price)
                 print("Buy: " + str(current_price))
-        elif action == 2 and len(self.buy_inventory) > 0 and len(self.sell_inventory) < 50:  # sell
+        elif action == 2 and len(self.buy_inventory) > 0:  # sell
+            i = 0
+            for i in range(0, int(len(self.buy_inventory) / 10)):
                 bought_price = self.buy_inventory.pop(0)
                 profit = current_price - bought_price
                 reward = profit  # max(profit, 0)
                 self.total_profit += profit
                 print("Sell: " + str(current_price) + " | Profit: " + formatPrice(profit))
+            reward = reward / (i + 1)
         elif action == 2 and len(self.sell_inventory) < 50:
                 self.sell_inventory.append(current_price)
                 print("Sell(空売り): " + formatPrice(current_price))
