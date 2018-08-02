@@ -175,14 +175,9 @@ class FxEnv(gym.Env):
                 print("Sell(空売り): " + formatPrice(current_price))
 
         print("Reward: "+str(reward))
-        print("inventory(sell) : "+str(len(self.sell_inventory)))
-        print("inventory(buy)  : "+str(len(self.buy_inventory)))
-        if False:#self.price_idx % 50000 == 1000:
-            print("last action:" + str(action))
-            print("TOTAL MONEY" + str(self.total_money))
-            print("100回中passは" + str(self.pass_count) + "回")
-            # print("100回中buy_sell_countは" + str(self.buy_sell_count) + "回")
-            self.pass_count = 0
+        print("inventory(sell) : "+str(len(self.sell_inventory))+"       inventory(buy)  : "+str(len(self.buy_inventory)))
+        print("TOTAL PROFIT:  "+str(self.total_profit))
+        if self.price_idx % 10000 == 1000:
             try:
                 self.trade.draw_trading_view()
             except:
